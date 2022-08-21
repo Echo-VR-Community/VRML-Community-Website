@@ -59,10 +59,9 @@
         // search = getCookie("search");
 
 
-        fetch("https://api.vrmasterleague.com/EchoArena/Matches/Upcoming")
+        fetch("https://api.ignitevr.gg/vrml/api/EchoArena/Matches/Upcoming?cache_time=60")
             .then(r => r.json())
             .then(r => {
-
                 let counter = 0;
                 for (let match of r) {
                     match["id"] = counter;
@@ -116,6 +115,13 @@
                 row["awayTeam"]["teamName"].toLowerCase().includes(search.toLowerCase())
             );
         }
+
+        const maxUpvotes = Math.max.apply(Math, matches.map(m => m['castUpvotes']));
+        for (let m of matches) {
+            m['upvoteColor'] = m['castUpvotes'] / maxUpvotes;
+            console.log(m['upvoteColor']);
+        }
+        matches = matches;
 
         // set cookies
         // setCookie("master", master.toString());
@@ -212,7 +218,7 @@
 		<p>Click on a row to show rosters.</p>
 	</Tile>
 	<br>
-	<Tile>
+	<Tile class="toggle-buttons">
 		<div style="display: flex; flex-direction: row; margin: 1em;">
 			<ButtonSet>
 				<Button kind={master?"primary":"secondary"} on:click={()=>{master = !master; queryChanged();}}>
@@ -249,90 +255,97 @@
 	<Search bind:value={search}/>
 
 	{#if !matches}
-		<DataTableSkeleton/>
+		<DataTableSkeleton showHeader={false} showToolbar={false}/>
 	{:else}
 
 
-		<table class="bx--data-table bx--data-table--sort bx--data-table--zebra">
-			<thead>
-			<tr>
-				<th>Time</th>
-				<th>Cast Votes</th>
-				<th style="text-align: center">Home Team</th>
-				<th>Bets</th>
-				<th style="text-align: center">Away Team</th>
-				<th>Division</th>
-				<th>Casters</th>
-				<th>Twitch</th>
-			</tr>
-			</thead>
-			<tbody>
-			{#each matches as m}
-				<tr on:click={()=>{fetchRosters(m);}}>
-					<td>{`${moment(new Date(m['dateScheduledUTC'] + "Z")).format('ddd h:mm A')}  (${moment(new Date(m['dateScheduledUTC'] + "Z")).fromNow()})`}</td>
-					<td>{m['castUpvotes'] ? m['castUpvotes'] : 0}</td>
-					<td>
-						<div class="teamNameRow">
-							<img class="teamLogo" src="https://vrmasterleague.com{m['homeTeam']['teamLogo']}"/>
-							<a href="https://vrmasterleague.com/EchoArena/Teams/{m['homeTeam']['teamID']}"
-							   target="_blank">{m['homeTeam']['teamName']}</a>
-						</div>
-
-					</td>
-					<td>{m['homeBetCount']} - {m['awayBetCount']}</td>
-					<td>
-						<div class="teamNameRow away">
-							<img class="teamLogo" src="https://vrmasterleague.com{m['awayTeam']['teamLogo']}"/>
-							<a href="https://vrmasterleague.com/EchoArena/Teams/{m['awayTeam']['teamID']}"
-							   target="_blank">{m['awayTeam']['teamName']}</a>
-						</div>
-					</td>
-					<td>{m['homeTeam']['divisionName'].split(' ')[0]}</td>
-					<td>{m['castersList']}</td>
-					<td>
-						{#if m['castingInfo']['channelURL']}
-							<a href="{m['castingInfo']['channelURL']}" target="_blank">Watch</a>
-						{/if}
-					</td>
+		<div style="overflow-x:scroll;">
+			<table class="bx--data-table bx--data-table--sort bx--data-table--zebra">
+				<thead>
+				<tr>
+					<th>Time</th>
+					<th style="max-width: 3em;padding: 0;">Cast Votes</th>
+					<th style="text-align: center">Home Team</th>
+					<th>Bets</th>
+					<th style="text-align: center">Away Team</th>
+					<th>Division</th>
+					<th>Casters</th>
+					<th>Twitch</th>
 				</tr>
-				{#if m['homeTeam']['teamName'] in rosters && m['awayTeam']['teamName'] in rosters && m['rostersVisible']}
-					<tr class="detailsRow">
-						<td></td>
-						<td></td>
-						<td>
-							<div class="roster-table">
-								{#each rosters[m['homeTeam']['teamName']]['players'] as player}
-									<div>
-										<div><a href={player['player_page']} target="_blank">{player['player_name']}</a>
-										</div>
-										<img src={player['player_logo']}/>
-									</div>
-								{/each}
-							</div>
+				</thead>
+				<tbody>
+				{#each matches as m}
+					<tr on:click={()=>{fetchRosters(m);}}>
+						<td class="time-col">
+							<a href="https://vrmasterleague.com/EchoArena/Match/{m['matchID']}" target="_blank">
+								{`${moment(new Date(m['dateScheduledUTC'] + "Z")).format('ddd h:mm A')}  (${moment(new Date(m['dateScheduledUTC'] + "Z")).fromNow()})`}
+							</a>
 						</td>
-						<td></td>
+						<td style="background-color: rgba(15,98,254,{m['upvoteColor']});">{m['castUpvotes'] ? m['castUpvotes'] : 0}</td>
 						<td>
-							<div class="roster-table away">
-								{#each rosters[m['awayTeam']['teamName']]['players'] as player}
-									<div>
-										<div><a href={player['player_page']} target="_blank">{player['player_name']}</a>
-										</div>
-										<img src={player['player_logo']}/>
-									</div>
-								{/each}
+							<div class="teamNameRow">
+								<img class="teamLogo" src="https://vrmasterleague.com{m['homeTeam']['teamLogo']}"/>
+								<a href="https://vrmasterleague.com/EchoArena/Teams/{m['homeTeam']['teamID']}"
+								   target="_blank">{m['homeTeam']['teamName']}</a>
 							</div>
-						</td>
-						<td></td>
-						<td></td>
-						<td></td>
-					</tr>
-					<tr style="height: .5em"></tr>
-				{/if}
-			{/each}
-			<tr></tr>
-			</tbody>
-		</table>
 
+						</td>
+						<td>{m['homeBetCount']} - {m['awayBetCount']}</td>
+						<td>
+							<div class="teamNameRow away">
+								<img class="teamLogo" src="https://vrmasterleague.com{m['awayTeam']['teamLogo']}"/>
+								<a href="https://vrmasterleague.com/EchoArena/Teams/{m['awayTeam']['teamID']}"
+								   target="_blank">{m['awayTeam']['teamName']}</a>
+							</div>
+						</td>
+						<td>{m['homeTeam']['divisionName'].split(' ')[0]}</td>
+						<td>{m['castersList']}</td>
+						<td>
+							{#if m['castingInfo']['channelURL']}
+								<a href="{m['castingInfo']['channelURL']}" target="_blank">Watch</a>
+							{/if}
+						</td>
+					</tr>
+					{#if m['homeTeam']['teamName'] in rosters && m['awayTeam']['teamName'] in rosters && m['rostersVisible']}
+						<tr class="details-row">
+							<td></td>
+							<td></td>
+							<td>
+								<div class="roster-table">
+									{#each rosters[m['homeTeam']['teamName']]['players'] as player}
+										<div>
+											<div><a href={player['player_page']}
+													target="_blank">{player['player_name']}</a>
+											</div>
+											<img src={player['player_logo']}/>
+										</div>
+									{/each}
+								</div>
+							</td>
+							<td></td>
+							<td>
+								<div class="roster-table away">
+									{#each rosters[m['awayTeam']['teamName']]['players'] as player}
+										<div>
+											<div><a href={player['player_page']}
+													target="_blank">{player['player_name']}</a>
+											</div>
+											<img src={player['player_logo']}/>
+										</div>
+									{/each}
+								</div>
+							</td>
+							<td></td>
+							<td></td>
+							<td></td>
+						</tr>
+						<tr style="height: .5em"></tr>
+					{/if}
+				{/each}
+				<tr></tr>
+				</tbody>
+			</table>
+		</div>
 	{/if}
 </div>
 
@@ -357,6 +370,16 @@
     height: 3em;
     width: 3em;
     margin: 0 1em;
+  }
+
+  .time-col {
+    min-width: 9em;
+  }
+
+  .time-col > a {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 500;
   }
 
   .roster-table {
@@ -408,6 +431,16 @@
 
   .roster-table > div:nth-child(2n+1) {
     background-color: #2f2f2f;
+  }
+
+  @media screen and (max-width: 1200px) {
+    :global(.bx--btn-set .bx--btn) {
+      max-width: 7em;
+    }
+
+    :global(.bx--btn-set) {
+      flex-wrap: wrap;
+    }
   }
 
 
