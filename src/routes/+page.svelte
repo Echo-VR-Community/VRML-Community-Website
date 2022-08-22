@@ -7,7 +7,6 @@
     import "carbon-components-svelte/css/g100.css";
     import moment from "moment";
     import {onMount} from "svelte";
-    import {getCookie, setCookie} from "../lib/util";
     import {goto} from "$app/navigation";
     import {page} from "$app/stores";
     import {browser} from '$app/env';
@@ -31,6 +30,9 @@
     let oce = false;
 
     let search = "";
+
+    let casted_only = false;
+
     master = $page.url.searchParams.get('master') != 'false';
     diamond = $page.url.searchParams.get('diamond') != 'false';
     platinum = $page.url.searchParams.get('platinum') != 'false';
@@ -41,6 +43,7 @@
     eu = $page.url.searchParams.get('eu') != 'false';
     oce = $page.url.searchParams.get('oce') != 'false';
     search = $page.url.searchParams.get('search') ? $page.url.searchParams.get('search') : "";
+    casted_only = $page.url.searchParams.get('casted_only') == 'true';
 
     onMount(() => {
 
@@ -82,7 +85,6 @@
 
 
     function filterMatches() {
-        console.log('filter');
 
         if (apiMatches === null) return;
 
@@ -115,11 +117,14 @@
                 row["awayTeam"]["teamName"].toLowerCase().includes(search.toLowerCase())
             );
         }
+        matches = matches.filter(row => {
+            if (row["castersList"] === "" && casted_only) return false;
+            return true;
+        });
 
         const maxUpvotes = Math.max.apply(Math, matches.map(m => m['castUpvotes']));
         for (let m of matches) {
             m['upvoteColor'] = m['castUpvotes'] / maxUpvotes;
-            console.log(m['upvoteColor']);
         }
         matches = matches;
 
@@ -157,6 +162,11 @@
         setQueryBool('na', na);
         setQueryBool('eu', eu);
         setQueryBool('oce', oce);
+        if (casted_only) {
+            $page.url.searchParams.set("casted_only", casted_only.toString());
+        } else {
+            $page.url.searchParams.delete("casted_only");
+        }
 
         goto(`?${$page.url.searchParams.toString()}`, {
             replaceState: true,
@@ -175,7 +185,6 @@
     }
 
     function fetchRoster(teamName: string) {
-        console.log("fetching roster");
         fetch("https://api.ignitevr.gg/vrml/get_players_on_team/" + teamName)
             .then(r => r.json())
             .then(r => {
@@ -248,6 +257,16 @@
 				<Button kind={na?"primary":"secondary"} on:click={()=>{na = !na; queryChanged();}}>NA</Button>
 				<Button kind={eu?"primary":"secondary"} on:click={()=>{eu = !eu; queryChanged();}}>EU</Button>
 				<Button kind={oce?"primary":"secondary"} on:click={()=>{oce = !oce; queryChanged();}}>OCE</Button>
+			</ButtonSet>
+
+		</div>
+		<div style="display: flex; flex-direction: row; margin: 1em;">
+
+			<ButtonSet>
+				<Button kind={casted_only?"primary":"secondary"}
+						on:click={()=>{casted_only = !casted_only; queryChanged();}}>
+					Casted
+				</Button>
 			</ButtonSet>
 
 		</div>
