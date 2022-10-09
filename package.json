@@ -29,7 +29,7 @@
     "vite": "^3.0.4"
   },
   "dependencies": {
-    "carbon-components-svelte": "^0.70.0",
+    "carbon-components-svelte": "^0.70.10",
     "moment": "^2.29.4"
   },
   "type": "module"
