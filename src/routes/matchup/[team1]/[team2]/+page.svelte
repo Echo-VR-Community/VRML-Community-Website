@@ -20,8 +20,7 @@
         StructuredListRow,
         Tile
     } from "carbon-components-svelte";
-    import "carbon-components-svelte/css/g100.css";
-    import vrml_logo_blue from '$lib/assets/vrml_logo_blue.png';
+    import TopRightLogo from "$lib/components/TopRightLogo.svelte";
 
     let team_details = [null, null];
 
@@ -67,12 +66,7 @@
 	</Breadcrumb>
 	<br>
 	<Tile>
-		<div style="float: right; display: flex;flex-direction: column;align-items: end;">
-			<img style="height: 4em;" src={vrml_logo_blue} alt="vrml logo"/>
-			<p style="margin: .5em; font-size: .9em; color: #aaa;">
-				This is a community website not affiliated with VRML
-			</p>
-		</div>
+		<TopRightLogo/>
 		<h2>Team Matchup</h2>
 		<p>See historical matchups and records for the selected teams.</p>
 		<p>.</p>

@@ -1,15 +1,16 @@
 <script lang="ts">
     import {
+        Breadcrumb,
+        BreadcrumbItem,
         Button,
         ButtonSet, DataTable,
         DataTableSkeleton, Pagination, Search, Theme, Tile, Toolbar, ToolbarContent, ToolbarSearch
     } from "carbon-components-svelte";
-    import "carbon-components-svelte/css/all.css";
     import {onMount} from "svelte";
     import {goto} from "$app/navigation";
     import {page} from "$app/stores";
     import {browser} from '$app/env';
-    import vrml_logo_blue from '$lib/assets/vrml_logo_blue.png';
+    import TopRightLogo from "$lib/components/TopRightLogo.svelte";
 
 
     let players = null;
@@ -75,13 +76,14 @@
 </style>
 
 <div style="max-width: 100em; margin: 5em auto;">
+
+	<Breadcrumb>
+		<BreadcrumbItem href="/">Home</BreadcrumbItem>
+		<BreadcrumbItem href="/players" isCurrentPage>Players</BreadcrumbItem>
+	</Breadcrumb>
+	<br>
 	<Tile>
-		<div style="float: right; display: flex;flex-direction: column;align-items: end;">
-			<img style="height: 4em;" src={vrml_logo_blue}/>
-			<p style="margin: .5em; font-size: .9em; color: #aaa; text-align: right">
-				This is a community website not affiliated with VRML<br>Designed to be as fast as possible
-			</p>
-		</div>
+		<TopRightLogo/>
 		<h2>{apiPlayers != null ? apiPlayers.length.toLocaleString() : ""} Players</h2>
 		<p>Search by player or team name.</p>
 		<p>This shows active and inactive players.</p>
@@ -131,7 +133,7 @@
 					</a>
 
 					<img class="teamLogo" src="https://vrmasterleague.com{row['teamLogo']}" loading="lazy"/>
-					<a href="https://vrmasterleague.com/EchoArena/Players/{row['teamID']}" target="_blank">
+					<a href="https://vrmasterleague.com/EchoArena/Teams/{row['teamID']}" target="_blank">
 						<Button kind="secondary">{row['teamName']}</Button>
 					</a>
 				</div>

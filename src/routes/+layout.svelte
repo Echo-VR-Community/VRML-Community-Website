@@ -1,5 +1,6 @@
 <script>
     import {Theme} from "carbon-components-svelte";
+    import "carbon-components-svelte/css/all.css";
 </script>
 
 

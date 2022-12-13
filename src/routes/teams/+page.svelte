@@ -1,16 +1,17 @@
 <script lang="ts">
     import {
+        Breadcrumb,
+        BreadcrumbItem,
         Button,
         ButtonSet,
         DataTableSkeleton, Search, Theme, Tile
     } from "carbon-components-svelte";
-    import "carbon-components-svelte/css/all.css";
     import moment from "moment";
     import {onMount} from "svelte";
     import {goto} from "$app/navigation";
     import {page} from "$app/stores";
     import {browser} from '$app/env';
-    import vrml_logo_blue from '$lib/assets/vrml_logo_blue.png';
+    import TopRightLogo from "$lib/components/TopRightLogo.svelte";
 
 
     let teams = null;
@@ -173,13 +174,13 @@
 </svelte:head>
 
 <div style="max-width: 100em; margin: 5em auto;">
+	<Breadcrumb>
+		<BreadcrumbItem href="/">Home</BreadcrumbItem>
+		<BreadcrumbItem href="/teams" isCurrentPage>Teams</BreadcrumbItem>
+	</Breadcrumb>
+	<br>
 	<Tile>
-		<div style="float: right; display: flex;flex-direction: column;align-items: end;">
-			<img style="height: 4em;" src={vrml_logo_blue}/>
-			<p style="margin: .5em; font-size: .9em; color: #aaa;">
-				This is a community website not affiliated with VRML
-			</p>
-		</div>
+		<TopRightLogo/>
 		<h2>{apiTeams != null ? apiTeams.length.toLocaleString() : ""} Teams</h2>
 		<p>Search by team name</p>
 		<p>Click on a row to show rosters</p>
